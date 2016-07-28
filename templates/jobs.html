@@ -1,0 +1,69 @@
+<html>
+<head>
+<script src="/static/jquery/jquery-2.1.4.min.js"></script>
+<script src="/static/moment/moment.js"></script>
+<link rel="stylesheet" href="/static/bootstrap/css/bootstrap.min.css">
+<link rel="stylesheet" href="/static/bootstrap/css/bootstrap-theme.min.css">
+<script src="/static/bootstrap/js/bootstrap.min.js"></script>
+
+<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+
+<style>
+.green { color: #00cc00; }
+.red { color: #ff0000; }
+#refresh { position: fixed; top: 0; left: 0; z-index: 1000;}
+.ellipsize {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    }
+</style>
+
+<script>
+function get_jobs(startdate,enddate) {
+    $.getJSON("http://192.168.10.222:5300/indeed/" + startdate + "/" + enddate + "/",function(response){
+        $.each(response,function(i,result) {
+            post_time = moment(result.post_time.$date).format("YYYY.M.DD h:mma");
+            row = '<tr onclick="window.open(\'' + result.data.url + '\');"><td>' + post_time + '</td><td>' + result.data.formattedLocation + '</td><td>' + result.data.company + '</td><td>' + result.data.jobtitle + '</td><td class="ellipsize">' + result.data.snippet + '</td></tr>';
+            $("#jobs > tbody").append(row);
+            });
+        });
+    };
+$(document).ready(function() {
+    $("#startdate").datepicker({dateFormat: 'yy-mm-dd'});
+    $("#enddate").datepicker({dateFormat: 'yy-mm-dd'});
+    start = moment().subtract(1,'days').startOf('day').format('YYYY-MM-DD');
+    end = moment().format('YYYY-MM-DD');
+    $("#startdate").val(start);
+    $("#enddate").val(end);
+    get_jobs($("#startdate").val(),$("#enddate").val());
+    
+    $("#submit").click(function() {
+        $("#jobs > tbody").empty();
+        get_jobs($("#startdate").val(),$("#enddate").val());
+        });
+    });
+
+
+</script>
+</head>
+<body>
+<br />
+Start date: <input type="text" id="startdate"/> End date: <input type="text" id="enddate"/> <button id="submit">Get Jobs</button><br/><br/>
+
+<table class="table table-hover" id="jobs">
+    <thead>
+        <tr>
+            <th>Post Time</th>
+            <th>Location</th>
+            <th>Company</th>
+            <th>Title</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+
+    </tbody>
+</body>
+</html>
